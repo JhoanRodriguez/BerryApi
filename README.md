@@ -2,7 +2,7 @@
 
 Backend for getting some statistics for the poke berries.
 
-Made with FastApi.
+Made with Python 3.9.1 & FastApi.
 
 ## Installation
 
@@ -19,8 +19,9 @@ pip install -r requirements.txt
 For runing the backend at local, run the following command:
 
 ```bash
-uvicorn main:app --reload
+uvicorn main:app
 ```
+
 
 ## Documentation
 

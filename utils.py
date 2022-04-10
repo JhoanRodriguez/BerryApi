@@ -5,7 +5,6 @@ import logging
 
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 import seaborn as sns
 from dotenv import load_dotenv
 from types import SimpleNamespace
@@ -17,7 +16,7 @@ load_dotenv()
 BASE_URL = os.getenv("POKE_API_BERRY_URL")
 ONE_DAY = 60 * 60 * 24
 
-def getAllBerriesStadistics():
+async def getAllBerriesStadistics():
     response = requests.get(BASE_URL)
     response = strToObject(response)
     payload = {"offset": 0, "limit": response.count}
@@ -75,7 +74,7 @@ def frequency(array):
     res = dict(zip(unique.tolist(), counts.tolist()))
     return res
 
-def send_image(path):
+def sendImage(path):
     def iterfile():  # 
         with open(path, mode="rb") as file_like:  # 
             yield from file_like  # 
@@ -96,6 +95,6 @@ async def generateHistogram():
         plt.title("Frequency of Growth Time", fontsize=18)
         plt.savefig("./assets/histogram.png")
         return True
-    except:
-        logging.error("Something was wrong while generating histogram")
+    except Exception as e:
+        logging.error("Something was wrong while generating histogram: ", e)
         return False
