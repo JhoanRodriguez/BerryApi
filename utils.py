@@ -2,6 +2,7 @@ import os
 import requests
 import json
 import logging
+import concurrent.futures
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -47,10 +48,16 @@ async def getAllBerriesStadistics():
 def getBerriesTime(data):
     data = json.loads(data, object_hook=lambda d: SimpleNamespace(**d))
     berries_growth_time = []
-    for item in data.results:
-        res = requests.get(item.url)
-        res = strToObject(res)
-        berries_growth_time.append(res.growth_time)
+    urls = [item.url for item in data.results]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+        future_to_url = (executor.submit(loadUrl, url, 5) for url in urls)
+        for future in concurrent.futures.as_completed(future_to_url):
+            try:
+                data = future.result()
+            except Exception as exc:
+                logging.error("Something was wrong with the request: ", exc)
+            finally:
+                berries_growth_time.append(data)
     return berries_growth_time
 
 def strToObject(data):
@@ -79,6 +86,11 @@ def sendImage(path):
         with open(path, mode="rb") as file_like:  # 
             yield from file_like  # 
     return StreamingResponse(iterfile(), media_type="image/png")
+
+def loadUrl(url, timeout):
+    res = requests.get(url, timeout=timeout)
+    res = strToObject(res)
+    return res.growth_time
 
 async def generateHistogram():
     try:
